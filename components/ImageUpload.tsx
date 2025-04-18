@@ -97,10 +97,10 @@ export function ImageUpload({ onImageSelect, currentImage, onError }: ImageUploa
             <UploadIcon className="w-8 h-8 text-primary mr-3 flex-shrink-0" aria-hidden="true" />
             <div className="">
               <p className="text-sm font-medium text-foreground">
-                Drop your image here or click to browse
+                將圖片拖曳到此處或點擊瀏覽
               </p>
               <p className="text-xs text-muted-foreground">
-                Maximum file size: 10MB
+                最大檔案大小：10MB
               </p>
             </div>
           </div>
@@ -111,7 +111,7 @@ export function ImageUpload({ onImageSelect, currentImage, onError }: ImageUploa
             <ImageIcon className="w-8 h-8 text-primary mr-3 flex-shrink-0" aria-hidden="true" />
             <div className="flex-grow min-w-0">
               <p className="text-sm font-medium truncate text-foreground">
-                {selectedFile?.name || "Current Image"}
+                {selectedFile?.name || "當前圖片"}
               </p>
               {selectedFile && (
                 <p className="text-xs text-muted-foreground">
@@ -126,7 +126,7 @@ export function ImageUpload({ onImageSelect, currentImage, onError }: ImageUploa
               className="flex-shrink-0 ml-2"
             >
               <X className="w-4 h-4" />
-              <span className="sr-only">Remove image</span>
+              <span className="sr-only">移除圖片</span>
             </Button>
           </div>
           <div className="w-full overflow-hidden rounded-md">

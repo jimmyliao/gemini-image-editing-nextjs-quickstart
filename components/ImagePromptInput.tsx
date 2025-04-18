@@ -30,8 +30,8 @@ export function ImagePromptInput({
       <div className="space-y-2">
         <p className="text-sm font-medium text-foreground">
           {isEditing
-            ? "Describe how you want to edit the image"
-            : "Describe the image you want to generate"}
+            ? "描述您想如何編輯圖片"
+            : "描述您想生成的圖片"}
         </p>
       </div>
 
@@ -40,8 +40,8 @@ export function ImagePromptInput({
         className="border-secondary resize-none"
         placeholder={
           isEditing
-            ? "Example: Make the background blue and add a rainbow..."
-            : "Example: A 3D rendered image of a pig with wings and a top hat flying over a futuristic city..."
+            ? "範例：將背景設為藍色並添加一道彩虹..."
+            : "範例：一隻有翅膀、戴著高帽的豬飛過未來城市的 3D 渲染圖..."
         }
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
@@ -53,7 +53,7 @@ export function ImagePromptInput({
         className="w-full bg-primary hover:bg-primary/90"
       >
         <Wand2 className="w-4 h-4 mr-2" />
-        {isEditing ? "Edit Image" : "Generate Image"}
+        {isEditing ? "編輯圖片" : "生成圖片"}
       </Button>
     </form>
   );
