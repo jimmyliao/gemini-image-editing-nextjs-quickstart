@@ -7,14 +7,6 @@ import { ImageIcon, Wand2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HistoryItem } from "@/lib/types";
 
-const DEFAULT_PROMPT = "一幅有趣的插畫，描繪一隻小狗在野花叢中追逐蝴蝶";
-const EXAMPLE_PROMPTS = [
-  "一張黑白照片，捕捉一位爵士音樂家在燈光昏暗的俱樂部裡吹奏薩克斯風",
-  "一幅表現力豐富的油畫，描繪暴風雨中的大海以及拍打懸崖的巨浪",
-  "一幅水彩素描，捕捉寧靜的花園景象，有石板小徑和盛開的花朵",
-  "一件極簡主義數位藝術作品，以和諧的色調呈現幾何形狀",
-];
-
 export default function Home() {
   const [image, setImage] = useState<string | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);

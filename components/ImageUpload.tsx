@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useState, useEffect } from "react";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, FileRejection } from "react-dropzone";
 import { Button } from "./ui/button";
-import { Upload as UploadIcon, Image as ImageIcon, X } from "lucide-react";
+import { UploadCloud as UploadIcon, Image as ImageIcon, X } from "lucide-react";
+import Image from "next/image";
 
 interface ImageUploadProps {
   onImageSelect: (imageData: string) => void;
@@ -33,10 +34,12 @@ export function ImageUpload({ onImageSelect, currentImage, onError }: ImageUploa
   }, [currentImage]);
 
   const onDrop = useCallback(
-    (acceptedFiles: File[], fileRejections) => {
-      if (fileRejections?.length > 0) {
-        const error = fileRejections[0].errors[0];
-        onError?.(error.message);
+    (
+      acceptedFiles: File[],
+      fileRejections: FileRejection[]
+    ) => {
+      if (fileRejections.length > 0) {
+        onError?.(`檔案類型錯誤或過大: ${fileRejections[0].errors[0].message}`);
         return;
       }
 
@@ -55,13 +58,14 @@ export function ImageUpload({ onImageSelect, currentImage, onError }: ImageUploa
         }
         setIsLoading(false);
       };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       reader.onerror = (error) => {
-        onError?.("Error reading file. Please try again.");
+        onError?.("讀取檔案時發生錯誤");
         setIsLoading(false);
       };
       reader.readAsDataURL(file);
     },
-    [onImageSelect]
+    [onImageSelect, onError]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -129,11 +133,12 @@ export function ImageUpload({ onImageSelect, currentImage, onError }: ImageUploa
               <span className="sr-only">移除圖片</span>
             </Button>
           </div>
-          <div className="w-full overflow-hidden rounded-md">
-            <img
+          <div className="w-full max-w-xs relative aspect-video overflow-hidden rounded-md">
+            <Image
               src={currentImage}
-              alt="Selected"
-              className="w-full h-auto object-contain"
+              alt="Selected file preview"
+              fill
+              objectFit="contain"
             />
           </div>
         </div>
