@@ -18,8 +18,8 @@ Get your `GEMINI_API_KEY` key [here](https://ai.google.dev/gemini-api/docs/api-k
 For developers who want to call the Gemini API directly, you can use the Google Generative AI JavaScript SDK:
 
 ```javascript
-import { GoogleGenerativeAI } from "@google/genai";
-import fs from "fs";
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const fs = require("fs");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 

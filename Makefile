@@ -1,18 +1,22 @@
 # Makefile for Next.js App
 
+# Include .env file if it exists and export variables
+-include .env
+export
+
 # --- Configuration ---
-# Replace with your Google Cloud Project ID
-PROJECT_ID ?= your-gcp-project-id
-# Replace with your desired Google Cloud region (e.g., us-central1)
-REGION ?= your-gcp-region
-# Replace with your Artifact Registry repository name
-ARTIFACT_REPO ?= your-artifact-repo-name
-# Replace with your desired Cloud Run service name
-SERVICE_NAME ?= gemini-image-editing-app
-# Image name (can be kept as is or customized)
+# Variables are now read from .env file
+# PROJECT_ID
+# REGION (maps to LOCATION in .env)
+# SERVICE_NAME
+
+# Target platform for Docker image (ensure compatibility with Cloud Run)
+TARGET_PLATFORM ?= linux/amd64
+
+# Image name (can be kept as is or customized, defaults to SERVICE_NAME)
 IMAGE_NAME ?= $(SERVICE_NAME)
-# Full image path in Artifact Registry
-IMAGE_TAG = $(REGION)-docker.pkg.dev/$(PROJECT_ID)/$(ARTIFACT_REPO)/$(IMAGE_NAME):latest
+# Full image path in GCR
+IMAGE_TAG = gcr.io/$(PROJECT)/$(IMAGE_NAME)
 
 # --- Initialization Check ---
 .PHONY: init
@@ -20,17 +24,47 @@ init:
 	@echo "Checking environment configuration..."
 	@if [ ! -f .env ]; then \
 		echo "Error: .env file not found."; \
-		echo "Please copy .env.example to .env and fill in your API key."; \
+		echo "Please copy .env.example to .env and fill in your environment variables."; \
 		exit 1; \
 	fi
-	@if ! grep -q "^GEMINI_API_KEY=" .env; then \
-		echo "Error: GEMINI_API_KEY not found in .env file."; \
-		echo "Please add GEMINI_API_KEY=your_actual_key to your .env file."; \
+	@if [ -z "$(GEMINI_API_KEY)" ]; then \
+		echo "Error: GEMINI_API_KEY not set in .env file."; \
+		echo "Please add GEMINI_API_KEY=YOUR_GEMINI_API_KEY to your .env file."; \
 		exit 1; \
 	fi
-	@if grep -q "^GEMINI_API_KEY=your_gemini_api_key" .env; then \
+	@if [ -z "$(PROJECT)" ]; then \
+		echo "Error: PROJECT not set in .env file."; \
+		echo "Please add PROJECT=YOUR_PROJECT_ID to your .env file."; \
+		exit 1; \
+	fi
+	@if [ -z "$(LOCATION)" ]; then \
+		echo "Error: LOCATION not set in .env file."; \
+		echo "Please add LOCATION=YOUR_REGION to your .env file."; \
+		exit 1; \
+	fi
+	@if [ -z "$(SERVICE_NAME)" ]; then \
+		echo "Error: SERVICE_NAME not set in .env file."; \
+		echo "Please add SERVICE_NAME=gemini-image-editing-app to your .env file."; \
+		exit 1; \
+	fi
+	@if [ "$(GEMINI_API_KEY)" = "YOUR_GEMINI_API_KEY" ]; then \
 		echo "Error: Placeholder GEMINI_API_KEY found in .env file."; \
-		echo "Please replace 'your_gemini_api_key' with your actual Gemini API key."; \
+		echo "Please replace 'YOUR_GEMINI_API_KEY' with your actual Gemini API key."; \
+		exit 1; \
+	fi
+	@if [ "$(PROJECT)" = "YOUR_PROJECT_ID" ]; then \
+		echo "Error: Placeholder PROJECT found in .env file."; \
+		echo "Please replace 'YOUR_PROJECT_ID' with your actual Project ID."; \
+		exit 1; \
+	fi
+	@if [ "$(LOCATION)" = "YOUR_REGION" ]; then \
+		echo "Error: Placeholder LOCATION found in .env file."; \
+		echo "Please replace 'YOUR_REGION' with your actual Region."; \
+		exit 1; \
+	fi
+	@if [ "$(SERVICE_NAME)" = "YOUR_SERVICE_NAME" ]; then \
+		echo "Error: Placeholder SERVICE_NAME found in .env file."; \
+		echo "Please replace 'YOUR_SERVICE_NAME' with your actual Service Name."; \
 		exit 1; \
 	fi
 	@echo "Environment configuration check passed."
@@ -55,24 +89,24 @@ run-local: init install
 
 # Build the Docker image
 build-image:
-	@echo "Building Docker image: $(IMAGE_TAG)..."
-	docker build -t $(IMAGE_TAG) .
+	@echo "Building Docker image: $(IMAGE_TAG) for platform $(TARGET_PLATFORM)..."
+	docker build --platform=$(TARGET_PLATFORM) -t $(IMAGE_TAG) .
 
 # Push the Docker image to Google Artifact Registry
-# Ensure you have authenticated Docker with gcloud: gcloud auth configure-docker $(REGION)-docker.pkg.dev
+# Ensure you have authenticated Docker with gcloud: gcloud auth configure-docker gcr.io
 push-image: build-image
 	@echo "Pushing Docker image: $(IMAGE_TAG)..."
 	docker push $(IMAGE_TAG)
 
 # Deploy the image to Google Cloud Run
 deploy: push-image
-	@echo "Deploying service $(SERVICE_NAME) to Cloud Run in region $(REGION)..."
+	@echo "Deploying service $(SERVICE_NAME) to Cloud Run in region $(LOCATION)..."
 	gcloud run deploy $(SERVICE_NAME) \
 		--image=$(IMAGE_TAG) \
-		--region=$(REGION) \
+		--region=$(LOCATION) \
 		--platform=managed \
 		--allow-unauthenticated \
-		--project=$(PROJECT_ID) \
+		--project=$(PROJECT) \
 		--quiet
 
 # Remove build artifacts and node_modules
@@ -98,11 +132,11 @@ help:
 	@echo "Utility Targets:"
 	@echo "  clean        Remove build artifacts and node_modules"
 	@echo ""
-	@echo "Configuration Variables (can be overridden):"
-	@echo "  PROJECT_ID   Google Cloud Project ID (default: $(PROJECT_ID))"
-	@echo "  REGION       Google Cloud Region (default: $(REGION))"
-	@echo "  ARTIFACT_REPO Artifact Registry Repository Name (default: $(ARTIFACT_REPO))"
-	@echo "  SERVICE_NAME Cloud Run Service Name (default: $(SERVICE_NAME))"
-	@echo "  IMAGE_NAME   Docker Image Name (default: $(IMAGE_NAME))"
+	@echo "Configuration Variables (read from .env):"
+	@echo "  PROJECT       Google Cloud Project ID"
+	@echo "  LOCATION      Google Cloud Region"
+	@echo "  SERVICE_NAME  Cloud Run Service Name"
+	@echo "  IMAGE_NAME    Docker Image Name (default: SERVICE_NAME)"
+	@echo "  TARGET_PLATFORM Target platform for Docker build (default: $(TARGET_PLATFORM))"
 
 .DEFAULT_GOAL := help
